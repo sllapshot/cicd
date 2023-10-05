@@ -64,8 +64,23 @@ jobs:
 
       - name: Test
         run: go test ./... -race -cover
-
-  build:
+  codecov:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "1.20"
+      - name: Run coverage
+        run: go test -coverprofile=coverage.txt -covermode=atomic ./...
+      - name: Upload coverage to Codecov
+        run: bash <(curl -s https://codecov.io/bash)
+  push_to_registry:
+    needs: [golangci, tests]
+    name: Push Docker image to GitHub Container Registry
     runs-on: ubuntu-latest
     permissions:
       contents: read
